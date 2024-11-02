@@ -1,0 +1,217 @@
+import { useState } from 'react';
+import {
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarFooter,
+  SidebarMenu,
+  SidebarMenuIt        'use client';
+
+import { useState } from 'react';
+import {
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarFooter,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+} from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  FileText,
+  MoreVertical,
+  Pencil,
+  Trash2,
+  UploadCloud,
+} from 'lucide-react';
+import type { FileObject } from '@/types';
+import { FileWiseLogo } from './filewise-logo';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useIsMobile } from '@/hooks/use-mobile';barMenuButton,
+} from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  FileText,
+  MoreVertical,
+  Pencil,
+  Trash2,
+  UploadCloud,
+} from 'lucide-react';
+import type { FileObject } from '@/types';
+import { FileWiseLogo } from './filewise-logo';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+
+interface FileSidebarProps {
+  files: FileObject[];
+  selectedFileId: string | null;
+  onFileSelect: (fileId: string) => void;
+  onFileDelete: (fileId: string) => void;
+  onFileRename: (fileId: string, newName: string) => void;
+  onFileUpload: () => void;
+  isUploading: boolean;
+}
+
+export function FileSidebar({
+  files,
+  selectedFileId,
+  onFileSelect,
+  onFileDelete,
+  onFileRename,
+  onFileUpload,
+  isUploading,
+}: FileSidebarProps) {
+  const [isRenameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [fileToRename, setFileToRename] = useState<FileObject | null>(null);
+  const [newName, setNewName] = useState('');
+  const isMobile = useIsMobile();
+
+  const handleRenameClick = (file: FileObject) => {
+    setFileToRename(file);
+    setNewName(file.name);
+    setRenameDialogOpen(true);
+  };
+
+  const handleRenameSubmit = () => {
+    if (fileToRename && newName.trim()) {
+      onFileRename(fileToRename.id, newName.trim());
+    }
+    setRenameDialogOpen(false);
+    setFileToRename(null);
+    setNewName('');
+  };
+
+  return (
+    <>
+      <Sidebar>
+        <SidebarHeader className={`border-b ${isMobile ? 'p-3' : 'p-4'}`}>
+          <div className="flex items-center gap-3">
+            <FileWiseLogo className={isMobile ? 'w-6 h-6' : 'w-8 h-8'} />
+            <h1 className={`font-bold tracking-tight ${
+              isMobile ? 'text-lg' : 'text-xl'
+            }`}>
+              {isMobile ? 'FileWise' : 'FileWise AI'}
+            </h1>
+          </div>
+        </SidebarHeader>
+
+        <SidebarContent className={isMobile ? 'p-1' : 'p-2'}>
+          <SidebarMenu>
+            {files.map(file => (
+              <SidebarMenuItem key={file.id}>
+                <SidebarMenuButton
+                  onClick={() => onFileSelect(file.id)}
+                  isActive={selectedFileId === file.id}
+                  className={`group ${isMobile ? 'min-h-[44px]' : ''}`}
+                >
+                  <FileText className={isMobile ? 'w-4 h-4' : 'w-5 h-5'} />
+                  <span className="truncate flex-1">{file.name}</span>
+                </SidebarMenuButton>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={`absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus:opacity-100 ${
+                        isMobile ? 'h-8 w-8' : 'h-7 w-7'
+                      }`}
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleRenameClick(file)}>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-destructive"
+                      onClick={() => onFileDelete(file.id)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarContent>
+
+        <SidebarFooter className="p-4 border-t">
+          <Button
+            className="w-full"
+            onClick={onFileUpload}
+            disabled={isUploading}
+          >
+            <UploadCloud className="mr-2 h-4 w-4" />
+            {isUploading ? 'Processing...' : 'Upload Files'}
+          </Button>
+        </SidebarFooter>
+      </Sidebar>
+
+      <Dialog open={isRenameDialogOpen} onOpenChange={setRenameDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename File</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={newName}
+                onChange={e => setNewName(e.target.value)}
+                className="col-span-3"
+                onKeyDown={e => e.key === 'Enter' && handleRenameSubmit()}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button onClick={handleRenameSubmit}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
